@@ -1,0 +1,6 @@
+Linear Search:
+- Simple searching algorithm that sequentially checks each element in a list or array.
+- Begins at the first element and compares it with the target value.
+- Continues until the element is found or the end of the list is reached.
+- Time complexity is O(n) where n is the number of elements in the list.
+- Suitable for small lists or unsorted data, but inefficient for large datasets.
