@@ -1,0 +1,8 @@
+Binary Search:
+- Efficient search algorithm for sorted arrays or lists.
+- Compares the target value to the middle element of the array.
+- If the middle element is the target, the search is successful.
+- If the target is less than the middle element, the search continues in the lower half; if greater, in the upper half.
+- Repeatedly divides the search interval in half until the target is found or the interval is empty.
+- Time complexity is O(log n) where n is the number of elements in the array.
+- Well-suited for large datasets and provides a significant performance advantage over linear search.
