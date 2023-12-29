@@ -1,0 +1,5 @@
+Bubble Sort:
+- Simple sorting algorithm that repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order.
+- Passes through the list are repeated until the list is sorted.
+- Inefficient for large datasets, with a time complexity of O(n^2) in the worst and average cases.
+- Useful for educational purposes or small datasets due to its simplicity.
