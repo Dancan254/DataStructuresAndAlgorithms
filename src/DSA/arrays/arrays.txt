@@ -1,0 +1,9 @@
+Used to store multiple values of the same data structure.
+#Readinng
+Best suited to read values because of the indexing
+#Searching
+Consumes a lot of time when searching for a value as you have to track through the whole array
+# Inserting
+Inserting at the end of an array is not that of a big deal. However, inserting at the middle is a bit of a challenge
+# Delete
+Deleting from the end is also easy but takes a lot of time to delete from the middle parts of the array

@@ -1,4 +1,4 @@
-package DSA.Arrays;
+package DSA.arrays;
 
 public class TargetSum {
 
@@ -8,7 +8,6 @@ public class TargetSum {
     //return the numbers that add up to the target
 
     public int[] numbersTarget(int[] arr, int targetSum){
-
         //first number
         int left = 0;
         //last element
