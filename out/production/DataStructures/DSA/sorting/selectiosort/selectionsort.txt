@@ -1,0 +1,7 @@
+Selection Sort:
+- A simple sorting algorithm that divides the input list into two sub-lists: the sublist of items already sorted and the sublist of items remaining to be sorted.
+- In each iteration, the algorithm finds the minimum element from the unsorted sublist and swaps it with the first element of the unsorted portion,
+  effectively expanding the sorted sublist by one element.
+- The process continues until the entire array is sorted.
+- Inefficient for large datasets, with a time complexity of O(n^2) in the worst and average cases.
+- Useful for educational purposes or small datasets due to its simplicity and ease of implementation.
