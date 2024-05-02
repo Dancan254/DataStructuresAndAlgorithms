@@ -24,12 +24,12 @@ public class Palindrome {
         }
         while(start < end){
             //compare the first and last character
-            if (chars[start] == chars[end]){
-                return true;
+            if (chars[start] != chars[end]){
+                return false;
             }
             start++;
             end--;
         }
-        return false;
+        return true;
     }
 }
