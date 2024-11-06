@@ -99,7 +99,6 @@ To better understand the efficiency of each data structure and algorithm, this r
 | Bubble Sort                | O(n^2)                 | O(n^2)                | O(1)             |
 | Merge Sort                 | O(n log n)             | O(n log n)            | O(n)             |
 
-> **Note**: Each folder also includes a README file discussing complexity in detail.
 
 ## 📝 How to Use
 
