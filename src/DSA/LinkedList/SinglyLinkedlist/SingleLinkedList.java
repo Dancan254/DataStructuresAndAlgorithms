@@ -20,5 +20,14 @@ public class SingleLinkedList {
         //link the new node at the end
         currentNode.next = newNode;
     }
+
+    //add new node to the beginning of the list
+    public void prepend(int data){
+        //create a new node instance with the data
+        Node node = new Node(data);
+        //set next of this new node to the current head
+        node.next = head; //link node to the current head
+        head = node;//update the head of the new node
+    }
     
 }
