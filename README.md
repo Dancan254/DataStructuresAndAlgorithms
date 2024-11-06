@@ -6,7 +6,7 @@ Welcome to the **Data Structures and Algorithms** repository! This repo is a com
 
 ## 📑 Table of Contents
 
-1. [Overview](#overview)
+1. [Overview](###🧩Overview)
 2. [Installation](#installation)
 3. [Data Structures](#data-structures)
 4. [Algorithms](#algorithms)
