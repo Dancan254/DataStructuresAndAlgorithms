@@ -1,4 +1,4 @@
-package DSA.LinkedList.SinglyLinkedlist;
+package dsa.linkedList.SinglyLinkedlist;
 
 public class SingleLinkedList {
     private Node head;

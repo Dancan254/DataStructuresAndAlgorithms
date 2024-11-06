@@ -1,4 +1,4 @@
-package DSA;
+package dsa;
 
 import java.util.Arrays;
 

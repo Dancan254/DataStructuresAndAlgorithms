@@ -1,6 +1,4 @@
-package DSA.arrays.binarysearch;
-
-import java.util.Scanner;
+package dsa.arrays.binarysearch;
 
 public class Demo {
     public static void main(String[] args) {

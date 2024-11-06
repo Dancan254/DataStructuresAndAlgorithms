@@ -1,4 +1,4 @@
-package DSA.arrays;
+package dsa.arrays;
 
 public class MinimumValue {
     public static void main(String[] args) {

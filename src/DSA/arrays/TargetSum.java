@@ -1,4 +1,4 @@
-package DSA.arrays;
+package dsa.arrays;
 
 public class TargetSum {
 
