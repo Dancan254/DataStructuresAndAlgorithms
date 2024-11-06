@@ -48,9 +48,20 @@ public class SingleLinkedList {
                 current.next = current.next.next; //skip over the node
                 return;
             }
-            current = current.next;
+            else current = current.next;
         }
     
+    }
+
+    //print list elements
+    public void printList(){
+        //traverse
+        Node current = head;
+        while(current != null){
+            System.out.print(current.data + " -> ");
+            current = current.next;
+        }
+        System.out.print("null");
     }
     
 }
