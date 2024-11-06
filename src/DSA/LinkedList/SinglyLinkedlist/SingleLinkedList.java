@@ -29,5 +29,28 @@ public class SingleLinkedList {
         node.next = head; //link node to the current head
         head = node;//update the head of the new node
     }
+
+    //remove the first node in the list with specified data
+    public void deleteWithValue(int data){
+        //check if the list is empty, return if so
+        if(head == null){
+            return;
+        }
+        //if head contains the data, update the head to nextNode
+        if(head.data == data){
+            head = head.next;
+            return;
+        }
+        //traverse until you find a node whose next contains the data
+        Node current = head;
+        while (current.next != null) { 
+            if(current.next.data == data){
+                current.next = current.next.next; //skip over the node
+                return;
+            }
+            current = current.next;
+        }
+    
+    }
     
 }
