@@ -63,5 +63,44 @@ public class SingleLinkedList {
         }
         System.out.print("null");
     }
-    
+
+    public void pop(){
+        if(head == null){
+            return;
+        }
+        if(head.next == null){
+            head = null;
+            return;
+        }
+        //traverse to the second last node
+        Node current = head;
+        while(current.next.next != null){
+            current = current.next;
+        }
+        //remove the last node
+        current.next = null;
+    }
+
+    public void removeFirst(){
+        if(head == null){
+            return;
+        }
+        head = head.next;
+    }
+
+    public int findByIndex(int index){
+        if(index < 0){
+            return -1;
+        }
+        int count  = 0;
+        Node current = head;
+        while(current != null && count != index){
+            current = current.next;
+            count++;
+        }
+        if (current == null) {
+        return -1; // Index out of bounds
+    }
+        return current.data;
+    }
 }
