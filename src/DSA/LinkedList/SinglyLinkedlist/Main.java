@@ -10,7 +10,9 @@ public class Main {
        list.append(30);
        list.printList();
        System.out.println();
-       list.deleteWithValue(30);
+       System.out.print(list.findByIndex(10));
+       System.out.println();
+       list.pop();
        list.printList();
     }
 }
