@@ -2,7 +2,7 @@
 
 # Data Structures and Algorithms (DSA)
 
-Welcome to the **Data Structures and Algorithms** repository! This repo is a comprehensive collection of various DSA implementations, covering essential concepts, techniques, and problem-solving approaches commonly asked in technical interviews and coding competitions.
+Welcome to the **Data Structures and Algorithms** repository! This repo is a collection of various DSA implementations, covering essential concepts, techniques, and problem-solving approaches commonly asked in technical interviews and coding competitions.
 
 ## 📑 Table of Contents
 
