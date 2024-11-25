@@ -111,7 +111,7 @@ To better understand the efficiency of each data structure and algorithm, this r
 
 Contributions to this DSA repository are welcome! Here’s how you can help:
 
-1. **Fix bugs**: Spot a bug? Open an issue or submit a pull request.
+1. **Fix bugs**: Spot a bug? Open an issue or submit a pr.
 2. **Add implementations**: Feel free to add new data structures, algorithms, or optimizations.
 3. **Improve documentation**: Clear explanations and examples are always welcome.
 
