@@ -1,8 +1,8 @@
 ---
 
-# Data Structures and Algorithms (DSA)
+# Data Structures and Algorithms (dsa)
 
-Welcome to the **Data Structures and Algorithms** repository! This repo is a collection of various DSA implementations, covering essential concepts, techniques, and problem-solving approaches commonly asked in technical interviews and coding competitions.
+Welcome to the **Data Structures and Algorithms** repository! This repo is a collection of various dsa implementations, covering essential concepts, techniques, and problem-solving approaches commonly asked in technical interviews and coding competitions.
 
 ## 📑 Table of Contents
 
@@ -109,7 +109,7 @@ To better understand the efficiency of each data structure and algorithm, this r
 
 ## 🤝 Contributing
 
-Contributions to this DSA repository are welcome! Here’s how you can help:
+Contributions to this dsa repository are welcome! Here’s how you can help:
 
 1. **Fix bugs**: Spot a bug? Open an issue or submit a pr.
 2. **Add implementations**: Feel free to add new data structures, algorithms, or optimizations.
@@ -125,7 +125,7 @@ Here are some helpful resources to deepen your understanding of data structures 
 - [LeetCode - Practice Problems](https://leetcode.com/)
 - [HackerRank - Data Structures](https://www.hackerrank.com/domains/tutorials/10-days-of-js)
 - [MIT OpenCourseWare - Introduction to Algorithms](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/)
-- [Java DSA Playlist](https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ)
+- [Java dsa Playlist](https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ)
 
 
 ---
