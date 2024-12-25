@@ -12,7 +12,7 @@ public class RemoveInteger {
         //odd count
         int oddCount = 0;
         for (int j : arr) {
-            if (j % 2 != 0) {
+            if (isOdd(j)) {
                 oddCount++;
             }
         }
