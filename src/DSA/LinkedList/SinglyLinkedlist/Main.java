@@ -1,4 +1,4 @@
-package dsa.linkedList.SinglyLinkedlist;
+package dsa.LinkedList.singlyLinkedlist;
 
 public class Main {
     public static void main(String[] args) {
