@@ -11,7 +11,6 @@ public class Demo {
     private static int binarySearch(int[] numbs, int target) {
         //steps
         int steps = 0;
-        //iterate
         //starting point
         int left = 0;
         //ending point
@@ -22,6 +21,7 @@ public class Demo {
             //check if middle value matches the target
             if (numbs[mid] == target){
                 System.out.println("Steps taken " + steps);
+                //return the index of the middle target element
                 return mid;
             } else if (numbs[mid] < target) {
                 left++;

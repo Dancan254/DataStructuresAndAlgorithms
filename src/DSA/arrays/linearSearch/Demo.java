@@ -1,7 +1,6 @@
 package dsa.arrays.linearSearch;
 
 public class Demo {
-
     public static void main(String[] args) {
         int[] numbs = {5, 6, 7, 8, 9, 13};
         int target = 9;
@@ -24,6 +23,4 @@ public class Demo {
         System.out.println("Steps taken " + steps);
         return -1;
     }
-
-
 }
