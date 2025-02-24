@@ -1,4 +1,4 @@
-package dsa.arrays;
+package dsa.arrays.practice;
 
 public class ResizeArray {
     public static void main(String[] args) {
