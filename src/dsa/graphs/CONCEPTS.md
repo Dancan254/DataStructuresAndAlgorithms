@@ -1,86 +1,170 @@
 # Graphs
 
-## Overview
+## What Is a Graph?
 
-A graph is a collection of nodes (vertices) connected by edges. Unlike trees,
-graphs can have cycles, multiple paths between nodes, and disconnected components.
+A graph G = (V, E) consists of a set of vertices (nodes) V and a set of edges E
+connecting pairs of vertices. Graphs model networks: roads, social connections,
+dependencies, web links, electrical circuits.
 
-Most graph interview problems involve one of four algorithms: BFS, DFS,
-Union-Find, or topological sort.
+Unlike trees, graphs can have **cycles**, multiple paths between nodes, and
+**disconnected components** (nodes with no path between them).
 
 ---
 
-## Representations
+## Graph Terminology
 
-**Adjacency List (most common for sparse graphs):**
-```java
-List<List<Integer>> adj = new ArrayList<>();
-for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
-adj.get(u).add(v);
-adj.get(v).add(u); // undirected
+| Term | Definition |
+|------|-----------|
+| Vertex (node) | A fundamental unit |
+| Edge | A connection between two vertices |
+| Adjacent | Two vertices connected by an edge |
+| Degree | Number of edges incident to a vertex |
+| In-degree | Number of incoming edges (directed graphs) |
+| Out-degree | Number of outgoing edges (directed graphs) |
+| Path | A sequence of vertices connected by edges |
+| Cycle | A path that starts and ends at the same vertex |
+| Connected | A graph where every pair of vertices has a path |
+| Component | A maximal connected subgraph |
+| DAG | Directed Acyclic Graph — no directed cycles |
+| Weighted | Edges have associated costs/weights |
+
+---
+
+## 1. Graph Types
+
+**Undirected:** edges have no direction. If (u, v) exists, (v, u) also exists.
+```
+A -- B -- C
+|         |
+D --------+
 ```
 
-**Grid as implicit graph:** Cells are nodes; edges connect cells in 4 directions.
-No explicit adjacency list needed — neighbours are `(r±1, c)` and `(r, c±1)`.
+**Directed (Digraph):** edges have direction. (u, v) means u → v only.
+```
+A → B → C
+↑       |
+D ←-----+
+```
+
+**Weighted:** each edge has a numerical weight (cost, distance, capacity).
+
+**DAG (Directed Acyclic Graph):** directed with no cycles. Used for dependency
+resolution, scheduling, topological ordering.
 
 ---
 
-## Pattern 1: DFS on a Graph
+## 2. Graph Representations
 
-Track visited nodes to avoid infinite loops.
+### Adjacency List (Most Common)
+
+Each vertex stores a list of its neighbours. Efficient for sparse graphs.
 
 ```java
-void dfs(int node, boolean[] visited, List<List<Integer>> adj) {
-    visited[node] = true;
-    for (int neighbour : adj.get(node)) {
-        if (!visited[neighbour]) dfs(neighbour, visited, adj);
-    }
+// Build an undirected graph with n vertices
+List<List<Integer>> adj = new ArrayList<>();
+for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+
+void addEdge(int u, int v) {
+    adj.get(u).add(v);
+    adj.get(v).add(u); // omit for directed graph
 }
 ```
 
-**Example — Number of Islands (LeetCode 200):**
-Grid DFS. Every time you find an unvisited '1', increment count and DFS to
-mark the entire island as visited.
+| Operation | Time |
+|-----------|------|
+| Add edge | O(1) |
+| Check edge (u,v) | O(degree(u)) |
+| Iterate neighbours of u | O(degree(u)) |
+| Space | O(V + E) |
+
+### Adjacency Matrix
+
+An n×n boolean (or weight) matrix. `matrix[u][v] = true` means edge u→v exists.
+Best when the graph is dense or you need O(1) edge queries.
 
 ```java
-// O(m * n) time, O(m * n) space
-public int numIslands(char[][] grid) {
-    int count = 0;
-    for (int r = 0; r < grid.length; r++) {
-        for (int c = 0; c < grid[0].length; c++) {
-            if (grid[r][c] == '1') {
-                dfs(grid, r, c);
-                count++;
+boolean[][] matrix = new boolean[n][n];
+
+void addEdge(int u, int v) {
+    matrix[u][v] = true;
+    matrix[v][u] = true; // omit for directed
+}
+```
+
+| Operation | Time |
+|-----------|------|
+| Add edge | O(1) |
+| Check edge (u,v) | O(1) |
+| Iterate neighbours of u | O(V) — must scan entire row |
+| Space | O(V²) |
+
+### Edge List
+
+A list of all edges as pairs (or triples for weighted). Used in algorithms
+that process all edges (Kruskal's MST, Bellman-Ford).
+
+```java
+int[][] edges = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
+```
+
+---
+
+## 3. Depth-First Search (DFS)
+
+Explores as far as possible along each branch before backtracking. Uses a
+stack (or recursion). Finds all vertices reachable from a source.
+
+```java
+boolean[] visited;
+
+void dfs(int v) {
+    visited[v] = true;
+    for (int neighbour : adj.get(v)) {
+        if (!visited[neighbour]) dfs(neighbour);
+    }
+}
+
+// Iterative DFS with explicit stack
+void dfsIterative(int start) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    visited[start] = true;
+    stack.push(start);
+    while (!stack.isEmpty()) {
+        int v = stack.pop();
+        process(v);
+        for (int neighbour : adj.get(v)) {
+            if (!visited[neighbour]) {
+                visited[neighbour] = true;
+                stack.push(neighbour);
             }
         }
     }
-    return count;
-}
-
-private void dfs(char[][] grid, int r, int c) {
-    if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length) return;
-    if (grid[r][c] != '1') return;
-    grid[r][c] = '0'; // mark visited by mutating the grid
-    dfs(grid, r+1, c); dfs(grid, r-1, c);
-    dfs(grid, r, c+1); dfs(grid, r, c-1);
 }
 ```
 
+**Time:** O(V + E)   **Space:** O(V) for visited + O(V) call stack
+
+**Use DFS for:** cycle detection, topological sort, connected components,
+strongly connected components (Kosaraju's, Tarjan's), path finding.
+
 ---
 
-## Pattern 2: BFS on a Graph
+## 4. Breadth-First Search (BFS)
 
-BFS finds the **shortest path** in an unweighted graph.
+Explores all neighbours at the current depth before going deeper. Uses a queue.
+Guarantees the **shortest path** in an unweighted graph.
 
 ```java
-void bfs(int start, boolean[] visited, List<List<Integer>> adj) {
+void bfs(int start) {
+    boolean[] visited = new boolean[n];
     Queue<Integer> queue = new LinkedList<>();
     visited[start] = true;
     queue.offer(start);
 
     while (!queue.isEmpty()) {
-        int node = queue.poll();
-        for (int neighbour : adj.get(node)) {
+        int v = queue.poll();
+        process(v);
+        for (int neighbour : adj.get(v)) {
             if (!visited[neighbour]) {
                 visited[neighbour] = true;
                 queue.offer(neighbour);
@@ -90,63 +174,65 @@ void bfs(int start, boolean[] visited, List<List<Integer>> adj) {
 }
 ```
 
+**Key:** mark visited BEFORE enqueuing, not after — otherwise the same node
+can be enqueued multiple times before being processed.
+
+**Time:** O(V + E)   **Space:** O(V)
+
+**Use BFS for:** shortest path in unweighted graphs, level-order traversal,
+bipartite checking, multi-source shortest path.
+
 ---
 
-## Pattern 3: Cycle Detection / Topological Sort
+## 5. Topological Sort
 
-**Topological sort** produces a linear ordering of nodes in a Directed Acyclic
-Graph (DAG) where all edges point forward.
+A linear ordering of vertices in a DAG such that for every directed edge u → v,
+u appears before v. Only valid for DAGs (no cycles).
 
-**Kahn's Algorithm (BFS-based):**
-1. Compute in-degrees of all nodes.
-2. Enqueue all nodes with in-degree 0.
-3. Process each node: decrement neighbours' in-degrees; enqueue any that reach 0.
-4. If all nodes are processed, no cycle exists.
+### Kahn's Algorithm (BFS-based)
 
-**Example — Course Schedule (LeetCode 207):**
-Can all courses be finished given prerequisites?
+1. Compute in-degree for all vertices.
+2. Enqueue all vertices with in-degree 0.
+3. Dequeue a vertex, add to result, decrement neighbours' in-degrees.
+4. Enqueue any neighbour whose in-degree reaches 0.
+5. If result contains all V vertices, the graph is a DAG.
 
 ```java
-// O(V + E) time, O(V + E) space
-public boolean canFinish(int numCourses, int[][] prerequisites) {
-    int[] inDegree = new int[numCourses];
-    List<List<Integer>> adj = new ArrayList<>();
-    for (int i = 0; i < numCourses; i++) adj.add(new ArrayList<>());
+int[] inDegree = new int[n];
+for (int u = 0; u < n; u++)
+    for (int v : adj.get(u)) inDegree[v]++;
 
-    for (int[] pre : prerequisites) {
-        adj.get(pre[1]).add(pre[0]);
-        inDegree[pre[0]]++;
-    }
+Queue<Integer> queue = new LinkedList<>();
+for (int i = 0; i < n; i++) if (inDegree[i] == 0) queue.offer(i);
 
-    Queue<Integer> queue = new LinkedList<>();
-    for (int i = 0; i < numCourses; i++) {
-        if (inDegree[i] == 0) queue.offer(i);
-    }
-
-    int processed = 0;
-    while (!queue.isEmpty()) {
-        int course = queue.poll();
-        processed++;
-        for (int next : adj.get(course)) {
-            if (--inDegree[next] == 0) queue.offer(next);
-        }
-    }
-    return processed == numCourses; // false if cycle detected
+List<Integer> order = new ArrayList<>();
+while (!queue.isEmpty()) {
+    int u = queue.poll();
+    order.add(u);
+    for (int v : adj.get(u))
+        if (--inDegree[v] == 0) queue.offer(v);
 }
+// order.size() < n means a cycle was detected
 ```
+
+### DFS-Based Topological Sort
+
+Run DFS. When a node finishes (all descendants visited), push it onto a stack.
+Pop the stack to get the topological order.
 
 ---
 
-## Pattern 4: Union-Find (Disjoint Set Union)
+## 6. Union-Find (Disjoint Set Union)
 
-Efficiently answers: "are two nodes in the same connected component?"
-Supports `union(a, b)` and `find(a)` in nearly O(1) amortised with path
-compression and union by rank.
+Efficiently answers "are these two nodes in the same connected component?" and
+merges components. Nearly O(1) per operation with two optimisations:
+- **Path compression:** flatten the tree during `find` by making all nodes point directly to the root.
+- **Union by rank:** always attach the shorter tree under the taller one.
 
 ```java
 class UnionFind {
-    private int[] parent, rank;
-    private int components;
+    int[] parent, rank;
+    int components;
 
     UnionFind(int n) {
         parent = new int[n];
@@ -162,7 +248,9 @@ class UnionFind {
 
     boolean union(int x, int y) {
         int px = find(x), py = find(y);
-        if (px == py) return false; // already connected
+        if (px == py) return false; // already in same component
+
+        // Union by rank
         if (rank[px] < rank[py]) { int tmp = px; px = py; py = tmp; }
         parent[py] = px;
         if (rank[px] == rank[py]) rank[px]++;
@@ -170,42 +258,67 @@ class UnionFind {
         return true;
     }
 
-    int getComponents() { return components; }
+    boolean connected(int x, int y) { return find(x) == find(y); }
+    int getComponents()             { return components; }
 }
 ```
 
-**Example — Number of Connected Components (LeetCode 323):**
-Union all edges. The answer is `UnionFind.getComponents()`.
+**Time:** O(α(n)) per operation (effectively O(1)) where α is the inverse Ackermann function.
 
 ---
 
-## Pattern 5: Multi-Source BFS
+## 7. Shortest Path Algorithms
 
-Start BFS from multiple sources simultaneously. Used when you need shortest
-distance from any of a set of source nodes.
+| Algorithm | Graph Type | Time | Notes |
+|-----------|-----------|------|-------|
+| BFS | Unweighted | O(V+E) | Exact shortest path |
+| Dijkstra's | Weighted, non-negative | O((V+E) log V) | Min-heap based |
+| Bellman-Ford | Weighted, negative edges OK | O(VE) | Detects negative cycles |
+| Floyd-Warshall | All-pairs | O(V³) | DP on all pairs |
 
-**Example — Pacific Atlantic Water Flow (LeetCode 417):**
-Run BFS from Pacific border cells (top row + left col) and from Atlantic border
-cells (bottom row + right col). Cells reachable from both are the answer.
+**Dijkstra's (outline):**
+```java
+int[] dist = new int[n];
+Arrays.fill(dist, Integer.MAX_VALUE);
+dist[start] = 0;
+PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+pq.offer(new int[]{start, 0});
+
+while (!pq.isEmpty()) {
+    int[] curr = pq.poll();
+    int u = curr[0], d = curr[1];
+    if (d > dist[u]) continue; // stale entry
+    for (int[] edge : adj.get(u)) {
+        int v = edge[0], w = edge[1];
+        if (dist[u] + w < dist[v]) {
+            dist[v] = dist[u] + w;
+            pq.offer(new int[]{v, dist[v]});
+        }
+    }
+}
+```
 
 ---
 
-## Complexity Summary
+## 8. Complexity Summary
 
-| Algorithm | Time | Space |
-|-----------|------|-------|
-| DFS / BFS on graph | O(V + E) | O(V) |
-| DFS / BFS on grid | O(m * n) | O(m * n) |
-| Topological sort (Kahn's) | O(V + E) | O(V + E) |
-| Union-Find (with optimisations) | O(α(n)) per op | O(n) |
+| Algorithm | Time | Space | Use Case |
+|-----------|------|-------|---------|
+| DFS | O(V + E) | O(V) | Connectivity, cycles, topological sort |
+| BFS | O(V + E) | O(V) | Shortest path (unweighted) |
+| Topological sort | O(V + E) | O(V) | Dependency ordering |
+| Union-Find | O(α(n)) per op | O(V) | Dynamic connectivity |
+| Dijkstra's | O((V+E) log V) | O(V) | Shortest path (non-negative weights) |
 
 ---
 
 ## Common Mistakes
 
-- Not marking a node as visited **before** enqueuing it in BFS (causes duplicate processing).
-- In grid DFS, mutating the grid to mark visited but not restoring it if the graph
-  is used again (fine for isolation problems, not for backtracking problems).
-- Confusing directed and undirected edges when building the adjacency list.
-- In topological sort, not checking whether all nodes were processed — this check
-  is how you detect a cycle.
+- Marking nodes as visited after dequeuing (BFS) instead of before enqueuing —
+  causes the same node to be enqueued multiple times.
+- Forgetting that topological sort only works on DAGs — cycle detection is built
+  into Kahn's algorithm via the final count check.
+- In Union-Find, comparing `find(x) == find(y)` not `x == y` (roots, not values).
+- Using DFS on a very deep graph without converting to iterative (stack overflow).
+- Not initialising `dist` to `Integer.MAX_VALUE` in Dijkstra's — adding to it
+  causes overflow: check `d > dist[u]` to skip stale priority queue entries.

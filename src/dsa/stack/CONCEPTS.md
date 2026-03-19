@@ -1,189 +1,218 @@
 # Stack
 
-## Overview
+## What Is a Stack?
 
-A stack is a Last-In First-Out (LIFO) data structure. Elements are pushed onto
-the top and popped from the top. Java provides `Deque<T>` (use `ArrayDeque`)
-as the preferred stack implementation — avoid the legacy `Stack` class.
+A stack is a linear data structure that follows the **Last-In First-Out (LIFO)**
+principle. The element inserted last is the first one removed. Think of a stack
+of plates — you add to the top and remove from the top.
 
+A stack is an **Abstract Data Type (ADT)** that can be implemented using arrays,
+linked lists, or the Java `Deque` interface.
+
+---
+
+## Core Operations
+
+| Operation | Description | Time |
+|-----------|-------------|------|
+| push(x) | Add element to the top | O(1) |
+| pop() | Remove and return the top element | O(1) |
+| peek() / top() | View the top element without removing | O(1) |
+| isEmpty() | Check if the stack has no elements | O(1) |
+| size() | Number of elements | O(1) |
+
+---
+
+## 1. Array-Based Stack
+
+Uses a fixed-size or dynamic array. The top of the stack is tracked by an index.
+
+```
+push(1): [1, _, _, _]  top=0
+push(2): [1, 2, _, _]  top=1
+push(3): [1, 2, 3, _]  top=2
+pop():   [1, 2, _, _]  top=1  returns 3
+peek():  returns 2, top unchanged
+```
+
+**Advantages:** Cache-friendly (contiguous memory), O(1) access by index.
+**Disadvantages:** Fixed capacity (unless dynamic array); unused space.
+
+```java
+class ArrayStack {
+    private int[] data;
+    private int top = -1;
+
+    ArrayStack(int capacity) { data = new int[capacity]; }
+
+    void push(int x) {
+        if (top == data.length - 1) throw new StackOverflowError();
+        data[++top] = x;
+    }
+
+    int pop() {
+        if (isEmpty()) throw new EmptyStackException();
+        return data[top--];
+    }
+
+    int peek()      { if (isEmpty()) throw new EmptyStackException(); return data[top]; }
+    boolean isEmpty() { return top == -1; }
+    int size()      { return top + 1; }
+}
+```
+
+---
+
+## 2. Linked List–Based Stack
+
+Each push creates a new node at the front (head) of the list. Pop removes
+the head. No capacity limit.
+
+```
+push(1) → [1] -> null
+push(2) → [2] -> [1] -> null   (2 is the new top/head)
+push(3) → [3] -> [2] -> [1] -> null
+pop()   → [2] -> [1] -> null   returns 3
+```
+
+**Advantages:** Dynamic size, no wasted space.
+**Disadvantages:** Extra memory per node (pointer overhead), poor cache locality.
+
+```java
+class LinkedStack {
+    private Node top;
+    private int size;
+
+    static class Node { int data; Node next; Node(int d) { data = d; } }
+
+    void push(int x) {
+        Node node = new Node(x);
+        node.next = top;
+        top = node;
+        size++;
+    }
+
+    int pop() {
+        if (isEmpty()) throw new EmptyStackException();
+        int val = top.data;
+        top = top.next;
+        size--;
+        return val;
+    }
+
+    int peek()        { if (isEmpty()) throw new EmptyStackException(); return top.data; }
+    boolean isEmpty() { return top == null; }
+    int size()        { return size; }
+}
+```
+
+---
+
+## 3. Java's Built-In Stack Options
+
+**`ArrayDeque` (preferred):**
 ```java
 Deque<Integer> stack = new ArrayDeque<>();
-stack.push(x);     // push to top — O(1)
-stack.pop();       // remove and return top — O(1)
-stack.peek();      // view top without removing — O(1)
-stack.isEmpty();   // O(1)
+stack.push(x);   // pushes to front (addFirst)
+stack.pop();     // removes from front (removeFirst)
+stack.peek();    // views front (peekFirst)
 ```
 
----
-
-## When to Use a Stack
-
-- You need to process elements in reverse order of their appearance.
-- You need to match opening and closing delimiters (brackets, tags, operators).
-- You need access to the nearest previous or next element satisfying a condition
-  (monotonic stack).
-- Evaluating or parsing expressions.
-- Replacing recursion with explicit call simulation.
+**Avoid `Stack<T>`** — it extends `Vector`, which is synchronized on every
+operation. Use `ArrayDeque` for single-threaded code.
 
 ---
 
-## Pattern 1: Matching / Validity (Bracket Problems)
+## 4. Monotonic Stack
 
-Push opening characters onto the stack. When a closing character is encountered,
-check that the top of the stack holds the matching opener.
+A monotonic stack maintains elements in either strictly increasing or decreasing
+order. When a new element violates the order, pop until it doesn't.
 
-**Example — Valid Parentheses (LeetCode 20):**
+**Total time is O(n)** — each element is pushed and popped at most once.
 
-```java
-// O(n) time, O(n) space
-public boolean isValid(String s) {
-    Deque<Character> stack = new ArrayDeque<>();
+```
+Monotonic decreasing stack for input [3, 1, 4, 1, 5, 9, 2, 6]:
 
-    for (char c : s.toCharArray()) {
-        if (c == '(' || c == '{' || c == '[') {
-            stack.push(c);
-        } else {
-            if (stack.isEmpty()) return false;
-            char top = stack.pop();
-            if (c == ')' && top != '(') return false;
-            if (c == '}' && top != '{') return false;
-            if (c == ']' && top != '[') return false;
-        }
-    }
-
-    return stack.isEmpty();
-}
+Process 3: stack [3]
+Process 1: 1 < 3, push. stack [3, 1]
+Process 4: 4 > 1, pop 1. 4 > 3, pop 3. push 4. stack [4]
+Process 1: 1 < 4, push. stack [4, 1]
+Process 5: 5 > 1, pop. 5 > 4, pop. push 5. stack [5]
+...
 ```
 
-**Why `stack.isEmpty()` at the end?** Unclosed openers like `"((("` would leave
-elements on the stack without the loop catching them.
+**When to use:**
+- Next Greater Element (to the right or left)
+- Previous Greater/Smaller Element
+- Largest Rectangle in Histogram
+- Trapping Rain Water
+- Daily Temperatures
 
----
-
-## Pattern 2: Min Stack (Auxiliary Stack for O(1) Queries)
-
-Maintain a second stack that stores the current minimum alongside the main stack.
-Every push records what the minimum was at that depth.
-
-**Example — Min Stack (LeetCode 155):**
-
-```java
-class MinStack {
-    private Deque<Integer> stack = new ArrayDeque<>();
-    private Deque<Integer> minStack = new ArrayDeque<>();
-
-    public void push(int val) {
-        stack.push(val);
-        int currentMin = minStack.isEmpty() ? val : Math.min(val, minStack.peek());
-        minStack.push(currentMin);
-    }
-
-    public void pop() {
-        stack.pop();
-        minStack.pop();
-    }
-
-    public int top()    { return stack.peek(); }
-    public int getMin() { return minStack.peek(); }
-}
-```
-
----
-
-## Pattern 3: Monotonic Stack
-
-A monotonic stack maintains elements in either strictly increasing or strictly
-decreasing order. When a new element violates the order, pop until it no longer
-does. This gives O(n) total time — each element is pushed and popped at most once.
-
-**Use cases:**
-- Next greater element / previous greater element.
-- Daily temperatures.
-- Largest rectangle in histogram.
-- Trapping rain water (stack alternative to two-pointer).
-
-**Template — Next Greater Element:**
+**Monotonic Increasing template (Next Greater Element):**
 ```java
 int[] result = new int[n];
 Arrays.fill(result, -1);
 Deque<Integer> stack = new ArrayDeque<>(); // stores indices
 
 for (int i = 0; i < n; i++) {
-    // Current element is greater than elements waiting on the stack
     while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
-        result[stack.pop()] = nums[i];
+        result[stack.pop()] = nums[i]; // i is the next greater for stack.peek()
     }
     stack.push(i);
 }
 ```
 
-**Example — Daily Temperatures (LeetCode 739):**
-For each day, find how many days until a warmer temperature.
+---
 
+## 5. Call Stack and Recursion
+
+Every function call occupies a stack frame containing local variables, parameters,
+and a return address. Deep recursion consumes O(h) stack space.
+Converting recursion to an explicit stack avoids stack overflow for deep inputs.
+
+**DFS with explicit stack (replacing recursion):**
 ```java
-// O(n) time, O(n) space
-public int[] dailyTemperatures(int[] temperatures) {
-    int n = temperatures.length;
-    int[] result = new int[n];
-    Deque<Integer> stack = new ArrayDeque<>(); // indices of unresolved days
-
-    for (int i = 0; i < n; i++) {
-        while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
-            int prevDay = stack.pop();
-            result[prevDay] = i - prevDay;
-        }
-        stack.push(i);
-    }
-    return result;
+Deque<TreeNode> stack = new ArrayDeque<>();
+stack.push(root);
+while (!stack.isEmpty()) {
+    TreeNode node = stack.pop();
+    process(node);
+    if (node.right != null) stack.push(node.right); // push right first
+    if (node.left  != null) stack.push(node.left);  // left processed first (LIFO)
 }
 ```
 
 ---
 
-## Pattern 4: Expression Evaluation (Reverse Polish Notation)
+## 6. Stack Applications
 
-Operands are pushed; when an operator is encountered, pop two operands, apply
-the operator, and push the result.
-
-**Example — Evaluate Reverse Polish Notation (LeetCode 150):**
-
-```java
-// O(n) time, O(n) space
-public int evalRPN(String[] tokens) {
-    Deque<Integer> stack = new ArrayDeque<>();
-
-    for (String token : tokens) {
-        switch (token) {
-            case "+" -> stack.push(stack.pop() + stack.pop());
-            case "-" -> { int b = stack.pop(), a = stack.pop(); stack.push(a - b); }
-            case "*" -> stack.push(stack.pop() * stack.pop());
-            case "/" -> { int b = stack.pop(), a = stack.pop(); stack.push(a / b); }
-            default  -> stack.push(Integer.parseInt(token));
-        }
-    }
-    return stack.pop();
-}
-```
-
-Note the order of pops for `-` and `/`: the second pop gives the left operand.
+| Application | Pattern |
+|-------------|---------|
+| Bracket matching | Push openers, match closers |
+| Undo/Redo | Two stacks |
+| Expression evaluation (RPN) | Operand stack |
+| Browser history | Two stacks (back/forward) |
+| Function call management | OS call stack |
+| DFS traversal | Explicit node stack |
+| Min/Max stack | Parallel tracking stack |
 
 ---
 
-## Complexity Summary
+## 7. Complexity Summary
 
-| Operation | ArrayDeque | Notes |
-|-----------|-----------|-------|
-| push | O(1) amortized | |
-| pop | O(1) | |
-| peek | O(1) | |
-| Monotonic stack processing (n elements) | O(n) total | Each element pushed/popped once |
+| Implementation | push | pop | peek | Space |
+|----------------|------|-----|------|-------|
+| Array-based | O(1) amortized | O(1) | O(1) | O(n) |
+| Linked list–based | O(1) | O(1) | O(1) | O(n) |
+| Monotonic (n elements total) | O(n) total | O(n) total | — | O(n) |
 
 ---
 
 ## Common Mistakes
 
-- Using `Stack<T>` from Java — it extends `Vector` and is thread-synchronized.
-  Use `ArrayDeque` instead.
-- Calling `peek()` or `pop()` on an empty stack without checking `isEmpty()`.
-- In subtraction/division with RPN, popping in the wrong order.
-- Forgetting the final `stack.isEmpty()` check in bracket matching.
+- Calling `peek()` or `pop()` without checking `isEmpty()`.
+- Using `Stack<T>` — use `ArrayDeque` instead.
+- In RPN evaluation, popping operands in the wrong order for `-` and `/`.
+- In monotonic stacks, using values when you should store indices (you need the
+  index to compute distances in problems like Daily Temperatures).
+- Forgetting the final `stack.isEmpty()` check after bracket matching.

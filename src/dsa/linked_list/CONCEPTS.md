@@ -1,197 +1,288 @@
 # Linked List
 
-## Overview
+## What Is a Linked List?
 
-A linked list is a sequence of nodes where each node holds a value and a pointer
-to the next node. Unlike arrays, nodes are not stored contiguously in memory —
-there is no O(1) index access, but insertions and deletions at a known position
-are O(1).
+A linked list is a linear data structure where elements (nodes) are stored in
+non-contiguous memory locations. Each node holds a value and one or more pointers
+to adjacent nodes. Unlike arrays, there is no index-based O(1) access, but
+insertions and deletions at a known position are O(1) because no shifting occurs.
+
+---
+
+## Node Structure
 
 ```java
-class ListNode {
-    int val;
-    ListNode next;
-    ListNode(int val) { this.val = val; }
+// Singly linked node
+class Node {
+    int data;
+    Node next;
+    Node(int data) { this.data = data; }
+}
+
+// Doubly linked node
+class DNode {
+    int data;
+    DNode prev, next;
+    DNode(int data) { this.data = data; }
 }
 ```
 
-| Operation | Singly Linked List | Notes |
-|-----------|--------------------|-------|
-| Access by index | O(n) | Must traverse from head |
-| Insert at head | O(1) | |
-| Insert at tail | O(n) or O(1) with tail pointer | |
+---
+
+## 1. Singly Linked List
+
+Each node points only to the next node. Traversal is one-directional (head to tail).
+
+```
+head
+ |
+[1] -> [2] -> [3] -> [4] -> null
+```
+
+### Core Operations
+
+| Operation | Time | Notes |
+|-----------|------|-------|
+| Insert at head | O(1) | Update head pointer |
+| Insert at tail | O(n) | Must traverse to find tail |
+| Insert at tail (with tail pointer) | O(1) | Keep a tail reference |
 | Delete by value | O(n) | Must find predecessor |
-| Delete at known node | O(1) | |
+| Search | O(n) | Sequential scan |
+| Access by index | O(n) | No random access |
 
----
+### Key Operations Illustrated
 
-## Pattern 1: Iterative Reversal
-
-Traverse the list once, redirecting each `next` pointer to the previous node.
-Maintain three pointers: `prev`, `curr`, `next`.
-
+**Insert at head:**
 ```java
-// O(n) time, O(1) space
-public ListNode reverseList(ListNode head) {
-    ListNode prev = null, curr = head;
-    while (curr != null) {
-        ListNode next = curr.next; // save before overwriting
-        curr.next = prev;          // reverse the link
-        prev = curr;
-        curr = next;
-    }
-    return prev; // prev is the new head
+Node newNode = new Node(val);
+newNode.next = head;
+head = newNode;
+size++;
+```
+
+**Insert at tail:**
+```java
+Node newNode = new Node(val);
+if (head == null) { head = tail = newNode; }
+else { tail.next = newNode; tail = newNode; }
+size++;
+```
+
+**Delete a node (given predecessor):**
+```java
+predecessor.next = predecessor.next.next;
+size--;
+```
+
+**Iterative traversal:**
+```java
+Node curr = head;
+while (curr != null) {
+    process(curr.data);
+    curr = curr.next;
 }
 ```
 
 ---
 
-## Pattern 2: Merge Two Sorted Lists
+## 2. Doubly Linked List
 
-Use a dummy head to simplify the logic — avoids special-casing the first node.
-At each step pick the smaller of the two current nodes.
+Each node has a `next` pointer AND a `prev` pointer, enabling traversal in
+both directions. This makes deletion of a known node O(1) without needing
+the predecessor reference.
 
-```java
-// O(n + m) time, O(1) space
-public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-    ListNode dummy = new ListNode(0);
-    ListNode curr = dummy;
-
-    while (l1 != null && l2 != null) {
-        if (l1.val <= l2.val) { curr.next = l1; l1 = l1.next; }
-        else                   { curr.next = l2; l2 = l2.next; }
-        curr = curr.next;
-    }
-    curr.next = (l1 != null) ? l1 : l2; // attach remaining nodes
-    return dummy.next;
-}
+```
+null <- [1] <-> [2] <-> [3] <-> [4] -> null
+         ^                        ^
+        head                     tail
 ```
 
-The dummy head pattern avoids an `if (head == null)` check at every insertion.
+### Advantages over Singly
+
+- Backward traversal in O(n)
+- Delete a node in O(1) given only the node (no predecessor needed)
+- Insert before a node in O(1)
+
+### Key Operations Illustrated
+
+**Insert after a given node:**
+```java
+Node newNode = new Node(val);
+newNode.next = node.next;
+newNode.prev = node;
+if (node.next != null) node.next.prev = newNode;
+node.next = newNode;
+if (newNode.next == null) tail = newNode;
+```
+
+**Delete a known node:**
+```java
+if (node.prev != null) node.prev.next = node.next;
+else head = node.next;          // deleting head
+
+if (node.next != null) node.next.prev = node.prev;
+else tail = node.prev;          // deleting tail
+```
+
+### Use Cases
+
+- LRU Cache (HashMap + doubly linked list for O(1) eviction)
+- Browser history (forward/back navigation)
+- Undo/redo in text editors
 
 ---
 
-## Pattern 3: Fast and Slow Pointers
+## 3. Circular Singly Linked List
 
-Two pointers traverse the list at different speeds. When fast reaches the end,
-slow is at a useful position (middle, cycle entry, etc.).
+The tail node's `next` pointer points back to the head instead of null.
+There is no null terminator — traversal must detect the return to head.
 
-**Detect cycle (LeetCode 141):**
+```
+     head
+      |
+[1] -> [2] -> [3] -> [4]
+ ^_________________________|
+```
+
+### Key Difference in Traversal
+
 ```java
-public boolean hasCycle(ListNode head) {
-    ListNode slow = head, fast = head;
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-        if (slow == fast) return true; // they meet inside the cycle
-    }
-    return false;
+if (head == null) return;
+Node curr = head;
+do {
+    process(curr.data);
+    curr = curr.next;
+} while (curr != head);
+```
+
+### Use Cases
+
+- Round-robin scheduling (CPU time slices)
+- Circular buffers
+- Multiplayer games (turn rotation)
+
+### Insert at Tail
+
+```java
+Node newNode = new Node(val);
+if (head == null) { head = newNode; newNode.next = head; }
+else {
+    Node tail = head;
+    while (tail.next != head) tail = tail.next;
+    tail.next = newNode;
+    newNode.next = head;
 }
 ```
 
-**Find middle of list:**
-When fast reaches the end, slow is at the middle. For even-length lists this
-returns the second of the two middle nodes.
+---
+
+## 4. Circular Doubly Linked List
+
+Combines doubly linked list with circular structure. The tail's `next` points
+to head, and head's `prev` points to tail. This gives O(1) access to both
+ends and O(1) insertion/deletion at either end.
+
+```
+     head                    tail
+      |                        |
+[1] <-> [2] <-> [3] <-> [4] <-> (wraps back to [1])
+```
+
+### Use Cases
+
+- Deque (double-ended queue) implementation
+- Fibonacci heap internals
+- Operating system ready queues
+
+---
+
+## 5. Comparison Table
+
+| Property | Singly | Doubly | Circular Singly | Circular Doubly |
+|----------|--------|--------|-----------------|-----------------|
+| Memory per node | 1 pointer | 2 pointers | 1 pointer | 2 pointers |
+| Backward traversal | No | Yes | No | Yes |
+| Delete known node | O(n) predecessor needed | O(1) | O(n) | O(1) |
+| End detection | null check | null check | compare to head | compare to head |
+| Insert at tail (no tail ptr) | O(n) | O(1) via head.prev | O(n) | O(1) via head.prev |
+
+---
+
+## 6. Key Algorithmic Patterns
+
+### Fast and Slow Pointers (Floyd's Algorithm)
+
+Slow advances one step, fast advances two. If a cycle exists, they will meet.
+Used for: cycle detection, finding the middle, finding the start of a cycle.
 
 ```java
 ListNode slow = head, fast = head;
 while (fast != null && fast.next != null) {
     slow = slow.next;
     fast = fast.next.next;
+    if (slow == fast) { /* cycle detected */ }
 }
-// slow is the middle node
+// If loop exits normally, no cycle. If slow == fast inside, cycle exists.
 ```
 
----
+**Finding the middle:**
+When fast reaches the end, slow is at the middle.
+```java
+while (fast != null && fast.next != null) {
+    slow = slow.next;
+    fast = fast.next.next;
+}
+// slow is now the middle node
+```
 
-## Pattern 4: Remove Nth Node From End
+### Iterative Reversal
 
-Use two pointers separated by a gap of n. When fast reaches the end, slow is
-just before the target node.
+Maintain three pointers: `prev`, `curr`, `next`.
+```java
+Node prev = null, curr = head;
+while (curr != null) {
+    Node next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+}
+head = prev;
+```
+
+### Dummy Head
+
+Prepend a sentinel node before `head` to eliminate special-casing for
+operations that may affect the first real node.
 
 ```java
-// O(n) time, O(1) space — single pass
-public ListNode removeNthFromEnd(ListNode head, int n) {
-    ListNode dummy = new ListNode(0);
-    dummy.next = head;
-    ListNode slow = dummy, fast = dummy;
-
-    // Advance fast n+1 steps so gap between slow and fast is n
-    for (int i = 0; i <= n; i++) fast = fast.next;
-
-    while (fast != null) {
-        slow = slow.next;
-        fast = fast.next;
-    }
-    slow.next = slow.next.next; // skip the target node
-    return dummy.next;
-}
+Node dummy = new Node(0);
+dummy.next = head;
+Node curr = dummy;
+// ... operate using curr
+return dummy.next; // the (potentially new) head
 ```
 
 ---
 
-## Pattern 5: Reorder List
+## 7. Linked List vs Array
 
-Reorder `L0 -> L1 -> ... -> Ln` into `L0 -> Ln -> L1 -> Ln-1 -> ...`
-
-Three steps:
-1. Find the middle with fast/slow pointers.
-2. Reverse the second half.
-3. Merge the two halves by alternating nodes.
-
-```java
-// O(n) time, O(1) space
-public void reorderList(ListNode head) {
-    // 1. Find middle
-    ListNode slow = head, fast = head;
-    while (fast.next != null && fast.next.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-
-    // 2. Reverse second half
-    ListNode second = slow.next;
-    slow.next = null;   // cut the list in half
-    ListNode prev = null;
-    while (second != null) {
-        ListNode tmp = second.next;
-        second.next = prev;
-        prev = second;
-        second = tmp;
-    }
-
-    // 3. Merge two halves
-    ListNode first = head;
-    second = prev;
-    while (second != null) {
-        ListNode tmp1 = first.next, tmp2 = second.next;
-        first.next = second;
-        second.next = tmp1;
-        first = tmp1;
-        second = tmp2;
-    }
-}
-```
-
----
-
-## Complexity Summary
-
-| Pattern | Time | Space |
-|---------|------|-------|
-| Iterative reversal | O(n) | O(1) |
-| Merge two sorted lists | O(n + m) | O(1) |
-| Fast/slow — cycle detection | O(n) | O(1) |
-| Remove Nth from end | O(n) | O(1) |
-| Reorder list | O(n) | O(1) |
+| | Array | Linked List |
+|--|-------|------------|
+| Access by index | O(1) | O(n) |
+| Insert/Delete at head | O(n) | O(1) |
+| Insert/Delete at tail | O(1) amortized | O(1) with tail ptr |
+| Insert/Delete in middle | O(n) | O(n) search + O(1) operation |
+| Memory | Contiguous | Non-contiguous |
+| Cache performance | Excellent | Poor (pointer chasing) |
+| Size flexibility | Resizing needed | Dynamic by nature |
 
 ---
 
 ## Common Mistakes
 
-- Not saving `curr.next` before redirecting `curr.next = prev` in reversal.
-- Forgetting to set `slow.next = null` when splitting a list in half.
-- Not using a dummy head when the returned head could change (e.g., deletion,
-  merge), causing conditional logic for the first node.
-- Accessing `fast.next.next` without checking `fast.next != null` first — causes
-  a NullPointerException.
+- Losing the rest of the list by overwriting `curr.next` before saving it.
+- Off-by-one in fast/slow pointer gaps (advance fast n+1, not n, for remove-nth).
+- Not updating the tail pointer when inserting or deleting at the tail.
+- In circular lists, using `null` as the loop terminator instead of comparing
+  back to `head`.
+- Not handling the empty list and single-node edge cases.

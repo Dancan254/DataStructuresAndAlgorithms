@@ -13,7 +13,7 @@ solutions to a large proportion of LeetCode Easy and Medium problems.
 
 ## Core Data Structures
 
-### Array
+### Array (Dynamic Array / ArrayList)
 
 An array stores elements in contiguous memory locations accessible by index.
 
@@ -29,7 +29,103 @@ An array stores elements in contiguous memory locations accessible by index.
 **Key insight:** When order does not matter, consider sorting the array first.
 Sorting costs O(n log n) but can reduce a subsequent operation from O(n²) to O(n).
 
+**Dynamic array internals:** Java's `ArrayList` is backed by an `Object[]`. When
+capacity is exceeded it allocates a new array ~1.5× the size and copies all elements.
+This makes `add()` O(1) amortised — expensive copies are rare and the cost amortises
+over many O(1) appends.
+
+---
+
+## Hash Table Internals
+
+Understanding how a hash table works prevents surprises in interviews and production code.
+
+### How It Works
+
+1. A hash function converts a key into an integer (the hash code).
+2. The integer is mapped to a bucket index: `index = hashCode % capacity`.
+3. The key-value pair is stored in that bucket.
+
+```
+Key "apple" → hashCode() = 93029210 → 93029210 % 16 = 10 → bucket 10
+```
+
+### Collision Resolution
+
+Two keys map to the same bucket (a **collision**). There are two common strategies:
+
+#### Separate Chaining (used by Java's HashMap)
+
+Each bucket holds a linked list (Java 8+: a red-black tree when the list exceeds 8
+nodes). All entries that hash to the same bucket form a chain.
+
+```
+bucket 3 → [("cat", 1)] → [("hat", 2)] → null
+```
+
+- **Lookup:** hash to bucket, then scan the chain for the matching key. O(1) average,
+  O(n) worst case if all keys hash to one bucket.
+- **Java detail:** `HashMap` uses separate chaining with treeification. When a bucket's
+  chain grows beyond 8 entries (and the table has ≥ 64 slots), the chain is converted
+  to a red-black tree for O(log n) worst-case lookup.
+
+#### Open Addressing (linear probing)
+
+All entries live in a flat array. On collision, probe the next slot until an empty one
+is found.
+
+```
+Insert "cat" → bucket 3 (occupied) → probe bucket 4 (empty) → store here
+```
+
+- **Lookup:** hash to start index, probe forward until the key is found or an empty slot
+  is reached.
+- **Deletion** is tricky — deleted slots must be marked as "tombstones" rather than left
+  empty, or probing chains break.
+- More cache-friendly than chaining (no pointer chasing), but performance degrades when
+  the table gets full (high load factor).
+
+### Load Factor and Rehashing
+
+The **load factor** = (number of entries) / (number of buckets). Java's `HashMap` has a
+default load factor of **0.75**.
+
+When the load factor exceeds the threshold:
+1. A new backing array (typically 2× the size) is allocated.
+2. Every existing entry is re-hashed into the new array (re-insertion).
+3. This is O(n) but happens infrequently — amortised O(1) per insert.
+
+```java
+// You can tune initial capacity and load factor:
+Map<String, Integer> map = new HashMap<>(32, 0.5f);
+// 32 initial buckets, rehash at 50% full — fewer collisions, more memory
+```
+
+**Trade-off:** Lower load factor → fewer collisions, faster lookups, but more wasted
+memory. Higher load factor → denser table, more collisions.
+
+### Why HashMap is O(1) Average, Not Guaranteed
+
+- In the average case the chain per bucket has length 1 (load factor < 1).
+- In the worst case (adversarial keys all mapping to one bucket) it degrades to O(n).
+- Java's treeification limits worst-case lookup to O(log n) per bucket.
+- **HashDoS attack:** an attacker can supply keys engineered to collide, degrading a
+  server's HashMap to O(n) per operation. Java 8 treeification was added as a defence.
+
+### Key Implementations in Java
+
+| Class | Order | Thread-safe | Null keys/values |
+|-------|-------|-------------|-----------------|
+| `HashMap` | None | No | One null key, null values OK |
+| `LinkedHashMap` | Insertion order | No | One null key, null values OK |
+| `TreeMap` | Sorted by key | No | No null key |
+| `Hashtable` | None | Yes (legacy) | No nulls |
+| `ConcurrentHashMap` | None | Yes | No null key or value |
+
 ### HashMap
+
+A hash map (Java: `HashMap<K, V>`) stores key-value pairs. The hash function maps
+keys to bucket indices, enabling average O(1) operations.
 
 A hash map (Java: `HashMap<K, V>`) stores key-value pairs. The hash function maps
 keys to bucket indices, enabling average O(1) operations.
@@ -45,13 +141,21 @@ map.getOrDefault(key, 0);    // O(1) average — returns 0 if key absent
 ### HashSet
 
 A hash set (Java: `HashSet<T>`) stores unique elements with O(1) average operations.
-Use it when you only need to answer "have I seen this before?"
+Use it when you only need to answer "have I seen this before?" `HashSet<T>` is backed
+by a `HashMap<T, PRESENT>` internally — same collision resolution and rehashing apply.
 
 ```java
 Set<Integer> seen = new HashSet<>();
 seen.add(x);         // returns false if x was already present
 seen.contains(x);    // O(1) average
+seen.remove(x);      // O(1) average
 ```
+
+| Class | Order | Notes |
+|-------|-------|-------|
+| `HashSet` | None | Backed by HashMap |
+| `LinkedHashSet` | Insertion order | Backed by LinkedHashMap |
+| `TreeSet` | Sorted | Backed by TreeMap, O(log n) ops |
 
 ---
 
@@ -260,8 +364,14 @@ public void rotate(int[][] matrix) {
 
 ## Common Mistakes
 
-- Using `==` to compare strings or Integer objects — use `.equals()`.
+- Using `==` to compare strings or `Integer` objects — use `.equals()`. Java caches
+  `Integer` values from -128 to 127, so `==` "works" in that range but breaks outside it.
 - Forgetting that `HashMap.get()` returns `null` for absent keys — use `getOrDefault`.
 - Not handling empty input or single-element arrays.
 - Assuming a hash map guarantees insertion order — use `LinkedHashMap` if order matters.
 - Sorting when a hash-based O(n) solution exists.
+- Mutating a key object after inserting it — the key's `hashCode()` changes, making the
+  entry unreachable. Only use immutable objects (String, Integer, etc.) as map keys.
+- Confusing `HashMap.size()` (number of entries) with the internal bucket count (capacity).
+- Iterating over a `HashMap` while modifying it — throws `ConcurrentModificationException`.
+  Use an `Iterator` and `iterator.remove()`, or collect keys to remove separately.

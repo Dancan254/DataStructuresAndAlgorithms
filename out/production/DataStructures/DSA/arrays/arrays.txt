@@ -1,7 +1,0 @@
-Arrays:
-- Data structure that stores elements of the same data type in contiguous memory locations.
-- Accessed using an index that represents the position of the element in the array.
-- Offers constant-time access to individual elements, as the position can be calculated using the index.
-- Can be used to store and manipulate a collection of elements, such as numbers, characters, or objects.
-- Arrays have a fixed size, meaning the number of elements they can hold is determined at the time of creation.
-- Efficient for retrieving and updating elements, but resizing an array can be costly in terms of memory and performance.
